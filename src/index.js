@@ -11,7 +11,7 @@ const { getData,
   getTalkerByID, 
   writeTalker, 
   deleteTalker, 
-  updateTalker, 
+  updateTalker,
 } = require('./utils/fsUtils');
 
 // não remova esse endpoint, e para o avaliador funcionar
@@ -113,9 +113,6 @@ const validateRateTalker = (req, res, next) => {
 const validateDataTalker = (req, res, next) => {
   const header = req.headers.authorization;
   if (!header) return res.status(401).json({ message: 'Token não encontrado' });
-  if (typeof header !== 'string' || header.length < 16) {
-    return res.status(401).json({ message: 'Token inválido' });
-  }
   next();
 };
 
@@ -132,6 +129,17 @@ app.get('/talker', async (req, res) => {
   res.status(200).json(talkers);
 });
 
+app.get('/talker/search', validateDataTalker, async (req, res) => {
+  const token = req.headers.authorization;
+  if (typeof token !== 'string' || token.length !== 16) {
+    return res.status(401).json({ message: 'Token inválido' });
+  }
+  const searchTerm = req.query.q;
+  const data = await getData();
+  const searchTalker = data.filter((talker) => talker.name.includes(searchTerm));
+  return res.status(200).json(searchTalker);
+});
+
 app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
   const talkersPerID = await getTalkerByID(Number(id));
@@ -144,7 +152,6 @@ app.get('/talker/:id', async (req, res) => {
 
 app.post('/login', validationTalker, (req, res) => {
   const token = generateToken();
-  console.log(token);
   res.setHeader('authorization', token);
   console.log(req.headers);
   res.status(200).json({ token });

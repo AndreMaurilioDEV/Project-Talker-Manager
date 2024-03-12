@@ -58,6 +58,7 @@ const updateTalker = async (id, updated) => {
     return null;
   }
 };
+
 // const login = {... bodyContent};
 
 module.exports = {
